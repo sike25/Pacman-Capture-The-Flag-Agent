@@ -55,7 +55,6 @@ def createTeam(firstIndex, secondIndex, isRed,
 # START OF OFFENSE
 
 
-
 class AttackAgent(CaptureAgent):
   def registerInitialState(self, gameState: capture.GameState):
     self.start = gameState.getAgentPosition(self.index)
@@ -172,7 +171,7 @@ class AttackAgent(CaptureAgent):
         features['maxAttackerDistance'] = max(dists)
 
     # Compute distance to nearest capsule
-    enemyCapsulesDistances = [self.getMazeDistance(myPos, capsule) for capsule in state.getRedCapsules()]
+    enemyCapsulesDistances = [self.getMazeDistance(myPos, capsule) for capsule in self.getCapsules(state)]
     if len(enemyCapsulesDistances) > 0:
       features['nearestEnemyCapsule'] = min(enemyCapsulesDistances)
 
@@ -224,19 +223,19 @@ class AttackAgent(CaptureAgent):
       return successor
     
   def getNearestDistanceHome(self, gameState: capture.GameState, sa, sb):
-    x = int(self.gridLength / 2)
+    if self.red:
+      x = int(self.gridLength / 2)
+    else:
+      x = int(self.gridLength / 2) - 1
+    
     distances = []
     for y in range(self.gridLength):
-      if self.inGrid(x, y):
+      try:
         distances.append(self.getMazeDistance((sa, sb), (x, y)))
+      except Exception:
+        distances
     return min(distances)
- 
-  def inGrid(self, x, y):
-    try:
-      self.getMazeDistance((30, 12), (x, y))
-      return True
-    except Exception:
-      return False
+
 
     
   ###################################################################################
@@ -291,7 +290,7 @@ class AttackAgent(CaptureAgent):
     if self.red:
       return xPosition == self.gridLength/2
     else:
-      return xPosition == (self.gridLength/2) + 1
+      return xPosition == (self.gridLength/2) - 1
   
 class Node():
     """
@@ -489,89 +488,3 @@ class DummyAgent(CaptureAgent):
     '''
 
     return random.choice(actions)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-class AlphaBetaAgent():
-    """
-    Your minimax agent with alpha-beta pruning (question 3)
-    """
-
-    def getAction(self, gameState):
-        """
-        Returns the minimax action using self.depth and self.evaluationFunction
-        """
-        return self.maxValue(gameState, -sys.maxsize, sys.maxsize, self.index, 0)[1]
-    
-
-    def maxValue(self, gameState, alpha, beta, index, depth):
-        # terminate
-        if depth == self.depth:
-            return (self.evaluationFunction(gameState), "")
-        
-        # find the maximum utility
-        maxV = -sys.maxsize
-        maxAction = ""
-        for action in gameState.getLegalActions(index):  
-            # call the first ghost   
-            minPredictedVal = self.minValue(gameState.generateSuccessor(index, action), alpha, beta, index+1, depth)[0]
-            maxV = max(maxV, minPredictedVal)
-
-            # update the action that resulted in the maximum value
-            if minPredictedVal == maxV:
-                maxAction = action
-
-            # prune
-            if maxV > beta:
-                return (maxV, action)
-            alpha = max(alpha, maxV)
-
-        # maxUtility, action that results in maxUtility
-        return (maxV, maxAction)
-
-    def minValue(self, gameState, alpha, beta, index, depth):
-        # terminate
-        if gameState.isWin() or gameState.isLose():
-            return (self.evaluationFunction(gameState), "")
-        if depth == self.depth:
-            return (self.evaluationFunction(gameState), "")
-        
-        # find the minimum utility
-        minV = sys.maxsize
-        minAction = ""
-        for action in gameState.getLegalActions(index):
-            predictedVal = 0
-
-            # if this is the last ghost, call max
-            if index == gameState.getNumAgents() - 1:
-                predictedVal = self.maxValue(gameState.generateSuccessor(index, action), alpha, beta, 0, depth + 1)[0]
-            # if this is not the last ghost, call the next ghost
-            else:
-                predictedVal = self.minValue(gameState.generateSuccessor(index, action), alpha, beta, index+1, depth)[0]
-            minV = min(minV, predictedVal)
-
-            # update the action that resulted in the minimum utility
-            if predictedVal == minV:
-                minAction = action
-
-            # prune
-            if minV < alpha:
-                return (minV, action)
-            beta = min(beta, minV)
-
-         # minUtility, action that results in minUtility
-        return (minV, minAction)
-
-       
-   
