@@ -137,9 +137,10 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     features = util.Counter()
     successor = self.getSuccessor(gameState, action)
     foodList = self.getFood(successor).asList()    
-    features['successorScore'] = -len(foodList) # self.getScore(successor)
+    features['successorScore'] = -len(foodList)#self.getScore(successor)
 
     # Compute distance to the nearest food
+
     if len(foodList) > 0: # This should always be True,  but better safe than sorry
       myPos = successor.getAgentState(self.index).getPosition()
       minDistance = min([self.getMazeDistance(myPos, food) for food in foodList])
@@ -147,7 +148,7 @@ class OffensiveReflexAgent(ReflexCaptureAgent):
     return features
 
   def getWeights(self, gameState: capture.GameState, action):
-    return {'successorScore': 100, 'distanceToFood': -10}
+    return {'successorScore': 100, 'distanceToFood': -1}
 
 class DefensiveReflexAgent(ReflexCaptureAgent):
   """
@@ -184,3 +185,5 @@ class DefensiveReflexAgent(ReflexCaptureAgent):
 
   def getWeights(self, gameState: capture.GameState, action):
     return {'numInvaders': -1000, 'onDefense': 100, 'invaderDistance': -10, 'stop': -100, 'reverse': -2}
+  
+  
